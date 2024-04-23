@@ -4,12 +4,30 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.EntitiesConfiguration
 {
-    public class ProductConfiguration
+    public class ProductConfiguration: IEntityTypeConfiguration<Product>
     {
-        public ProductConfiguration(EntityTypeBuilder<Product> builder)
+        public void Configure(EntityTypeBuilder<Product> builder)
         {
             builder.ToTable("Product");
             builder.HasKey(p => p.Id).HasName("PK_Product_Id");
+            builder.Property(p => p.Name).IsRequired().HasMaxLength(100);
+            builder.Property(p => p.Description).IsRequired();
+            builder.Property(p => p.Price).HasColumnType("decimal(18, 2)");
+            builder.Property(p => p.PictureUrl).IsRequired();
+
+            builder.HasOne(p => p.ProductBrand)
+                .WithMany(pb => pb.Products)
+                .HasForeignKey(p => p.ProductBrandId)
+                .HasConstraintName("FK_Product_ProductBrandId")
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(p => p.ProductType)
+                .WithMany(pb => pb.Products)
+                .HasForeignKey(p => p.ProductTypeId)
+                .HasConstraintName("FK_Product_ProductTypeId")
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
